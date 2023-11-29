@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import n1b3lung0.restapi.user.User;
 
+import java.net.URI;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -46,6 +48,18 @@ class UserControllerTests {
         User newUSer = new User(null, "Carlos");
         ResponseEntity<Void> createResponse = restTemplate.postForEntity("/users", newUSer, Void.class);
 
-        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        URI locationOfNewUser = createResponse.getHeaders().getLocation();
+        ResponseEntity<String> getResponse = restTemplate.getForEntity(locationOfNewUser, String.class);
+
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number id = documentContext.read("$.id");
+        String name = documentContext.read("$.name");
+
+        assertThat(id).isNotNull();
+        assertThat(name).isEqualTo("Carlos");
     }
 }
