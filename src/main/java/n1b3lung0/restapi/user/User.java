@@ -4,5 +4,5 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table(name = "USERS")
-record User(@Id Long id, String name) {
+public record User(@Id Long id, String name) {
 }

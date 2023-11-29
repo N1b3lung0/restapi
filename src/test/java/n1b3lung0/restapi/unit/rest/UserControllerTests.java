@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import n1b3lung0.restapi.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,5 +39,13 @@ class UserControllerTests {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isBlank();
+    }
+
+    @Test
+    void shouldCreateANewUser() {
+        User newUSer = new User(null, "Carlos");
+        ResponseEntity<Void> createResponse = restTemplate.postForEntity("/users", newUSer, Void.class);
+
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }
