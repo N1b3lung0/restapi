@@ -24,7 +24,9 @@ class UserControllerTests {
 
     @Test
     void shouldReturnAUserWhenDataIsSaved() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/users/100", String.class);
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users/100", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -39,7 +41,9 @@ class UserControllerTests {
 
     @Test
     void shouldNotReturnAUserWithAnUnknownId() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/users/99", String.class);
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users/99", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isBlank();
@@ -48,13 +52,17 @@ class UserControllerTests {
     @Test
     @DirtiesContext
     void shouldCreateANewUser() {
-        User newUSer = new User(null, "Carlos");
-        ResponseEntity<Void> createResponse = restTemplate.postForEntity("/users", newUSer, Void.class);
+        User newUSer = new User(null, "Carlos", "admin");
+        ResponseEntity<Void> createResponse = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .postForEntity("/users", newUSer, Void.class);
 
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         URI locationOfNewUser = createResponse.getHeaders().getLocation();
-        ResponseEntity<String> getResponse = restTemplate.getForEntity(locationOfNewUser, String.class);
+        ResponseEntity<String> getResponse = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity(locationOfNewUser, String.class);
 
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -68,7 +76,9 @@ class UserControllerTests {
 
     @Test
     void shouldReturnAllUsersWhenListIsRequested() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/users", String.class);
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -85,7 +95,9 @@ class UserControllerTests {
 
     @Test
     void shouldReturnAPageOfUsers() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/users?page=0&size=1", String.class);
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users?page=0&size=1", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -96,7 +108,9 @@ class UserControllerTests {
 
     @Test
     void shouldReturnASortedPageOfUsers() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/users?page=0&size=1&sort=name,asc", String.class);
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users?page=0&size=1&sort=name,asc", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -110,7 +124,9 @@ class UserControllerTests {
 
     @Test
     void shouldReturnASortedPageOfUsersWithNoParametersAndUseDefaultValues() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/users", String.class);
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -120,5 +136,17 @@ class UserControllerTests {
 
         JSONArray names = documentContext.read("$..name");
         assertThat(names).containsExactly("Andrés", "Carlos", "Luis");
+    }
+    @Test
+    void shouldNotReturnAUserWhenUsingBadCredentials() {
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("BAD-USER", "abc123")
+                .getForEntity("/users/100", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        response = restTemplate
+                .withBasicAuth("admin", "BAD-PASSWORD")
+                .getForEntity("/users/100", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

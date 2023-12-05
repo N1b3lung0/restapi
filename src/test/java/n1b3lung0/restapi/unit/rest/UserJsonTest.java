@@ -26,9 +26,9 @@ class UserJsonTest {
     @BeforeEach
     void setUp() {
         users = Arrays.array(
-                new User(100L, "Carlos"),
-                new User(101L, "Luis"),
-                new User(102L, "Andrés")
+                new User(100L, "Carlos", "admin"),
+                new User(101L, "Luis", "admin"),
+                new User(102L, "Andrés", "admin")
         );
     }
 
@@ -47,12 +47,14 @@ class UserJsonTest {
         String expected = """
                 {
                     "id": 100,
-                    "name": "Carlos"
+                    "name": "Carlos",
+                    "owner": "admin"
                 }
                 """;
-        assertThat(json.parse(expected)).isEqualTo(new User(100L, "Carlos"));
+        assertThat(json.parse(expected)).isEqualTo(new User(100L, "Carlos", "admin"));
         assertThat(json.parseObject(expected).id()).isEqualTo(100);
         assertThat(json.parseObject(expected).name()).isEqualTo("Carlos");
+        assertThat(json.parseObject(expected).owner()).isEqualTo("admin");
     }
 
     @Test
@@ -64,9 +66,9 @@ class UserJsonTest {
     void userListDeserializationTest() throws IOException {
         String expected="""
          [
-            { "id": 100, "name": "Carlos" },
-            { "id": 101, "name": "Luis" },
-            { "id": 102, "name": "Andrés" }
+            { "id": 100, "name": "Carlos", "owner": "admin" },
+            { "id": 101, "name": "Luis", "owner": "admin" },
+            { "id": 102, "name": "Andrés", "owner": "admin" }
          ]
          """;
         assertThat(jsonList.parse(expected)).isEqualTo(users);
