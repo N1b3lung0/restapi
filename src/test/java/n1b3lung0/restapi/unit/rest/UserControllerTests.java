@@ -52,7 +52,7 @@ class UserControllerTests {
     @Test
     @DirtiesContext
     void shouldCreateANewUser() {
-        User newUSer = new User(null, "Carlos", "admin");
+        User newUSer = new User(null, "Carlos", null);
         ResponseEntity<Void> createResponse = restTemplate
                 .withBasicAuth("admin", "abc123")
                 .postForEntity("/users", newUSer, Void.class);
@@ -148,5 +148,21 @@ class UserControllerTests {
                 .withBasicAuth("admin", "BAD-PASSWORD")
                 .getForEntity("/users/100", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void shouldRejectUsersWhoAreNotAdminOwns() {
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("non-admin", "password")
+                .getForEntity("/users/100", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void shouldNotAllowAccessToUsersTheyDoNotOwn() {
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users/103", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

@@ -20,7 +20,7 @@ class SecurityConfig {
         http
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/users/**")
-                        .authenticated()
+                        .hasRole("ADMIN")
                 )
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(Customizer.withDefaults());
@@ -33,9 +33,14 @@ class SecurityConfig {
         UserDetails admin = users
                 .username("admin")
                 .password(passwordEncoder.encode("abc123"))
-                .roles() // No roles for now
+                .roles("ADMIN")
                 .build();
-        return new InMemoryUserDetailsManager(admin);
+        UserDetails nonAdmin = users
+                .username("non-admin")
+                .password(passwordEncoder.encode("password"))
+                .roles("NON-ADMIN")
+                .build();
+        return new InMemoryUserDetailsManager(admin, nonAdmin);
     }
 
     @Bean

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +29,8 @@ class UserController {
     }
 
     @GetMapping("/{requestedId}")
-    private ResponseEntity<User> findById(@PathVariable Long requestedId) {
-        Optional<User> userOptional = repository.findById(requestedId);
+    private ResponseEntity<User> findById(@PathVariable Long requestedId, Principal principal) {
+        Optional<User> userOptional = Optional.ofNullable(repository.findByIdAndOwner(requestedId, principal.getName()));
         if(userOptional.isPresent()) {
             return ResponseEntity.ok(userOptional.get());
         } else {
@@ -38,8 +39,9 @@ class UserController {
     }
 
     @GetMapping()
-    private ResponseEntity<List<User>> findAll(Pageable pageable) {
-        Page<User> page = repository.findAll(
+    private ResponseEntity<List<User>> findAll(Pageable pageable, Principal principal) {
+        Page<User> page = repository.findByOwner(
+                principal.getName(),
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
@@ -50,8 +52,9 @@ class UserController {
     }
 
     @PostMapping
-    private ResponseEntity<Void> createUser(@RequestBody User newUserRequest, UriComponentsBuilder uriComponentsBuilder) {
-        User savedUser = repository.save(newUserRequest);
+    private ResponseEntity<Void> createUser(@RequestBody User newUserRequest, UriComponentsBuilder uriComponentsBuilder, Principal principal) {
+        User userWithOwner = new User(null, newUserRequest.name(), principal.getName());
+        User savedUser = repository.save(userWithOwner);
         URI locationOfNewUser = uriComponentsBuilder
                 .path("users/{id}")
                 .buildAndExpand(savedUser.id())
