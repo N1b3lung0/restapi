@@ -17,7 +17,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -31,9 +30,9 @@ class UserController {
 
     @GetMapping("/{requestedId}")
     private ResponseEntity<User> findById(@PathVariable Long requestedId, Principal principal) {
-        Optional<User> userOptional = Optional.ofNullable(repository.findByIdAndOwner(requestedId, principal.getName()));
-        if(userOptional.isPresent()) {
-            return ResponseEntity.ok(userOptional.get());
+        User user = findUser(requestedId, principal);
+        if(user != null) {
+            return ResponseEntity.ok(user);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -65,12 +64,16 @@ class UserController {
 
     @PutMapping("/{requestedId}")
     private ResponseEntity<Void> putUser(@PathVariable Long requestedId, @RequestBody User userUpdate, Principal principal) {
-        User user = repository.findByIdAndOwner(requestedId, principal.getName());
+        User user = findUser(requestedId, principal);
         if (user != null) {
             User updatedUser = new User(user.id(), userUpdate.name(), principal.getName());
             repository.save(updatedUser);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private User findUser(Long requestedId, Principal principal) {
+        return repository.findByIdAndOwner(requestedId, principal.getName());
     }
 }

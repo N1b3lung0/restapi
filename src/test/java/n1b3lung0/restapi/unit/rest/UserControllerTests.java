@@ -202,4 +202,15 @@ class UserControllerTests {
                 .exchange("/users/99999", HttpMethod.PUT, request, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
+
+    @Test
+    void shouldNotUpdateAUserThatIsOwnedBySomeoneElse() {
+        User adminUser = new User(null, "Tomás", null);
+        HttpEntity<User> request = new HttpEntity<>(adminUser);
+        ResponseEntity<Void> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .exchange("/users/103", HttpMethod.PUT, request, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
 }
