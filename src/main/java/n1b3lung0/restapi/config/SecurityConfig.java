@@ -40,7 +40,12 @@ class SecurityConfig {
                 .password(passwordEncoder.encode("password"))
                 .roles("NON-ADMIN")
                 .build();
-        return new InMemoryUserDetailsManager(admin, nonAdmin);
+        UserDetails admin2 = users
+                .username("admin2")
+                .password(passwordEncoder.encode("def456"))
+                .roles("ADMIN")
+                .build();
+        return new InMemoryUserDetailsManager(admin, nonAdmin, admin2);
     }
 
     @Bean

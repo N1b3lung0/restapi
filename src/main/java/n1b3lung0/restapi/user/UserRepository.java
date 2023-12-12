@@ -8,4 +8,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 interface UserRepository extends CrudRepository<User, Long>, PagingAndSortingRepository<User, Long> {
     User findByIdAndOwner(Long id, String owner);
     Page<User> findByOwner(String owner, PageRequest pageRequest);
+
+    boolean existsByIdAndOwner(Long id, String owner);
 }
