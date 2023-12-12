@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import n1b3lung0.restapi.user.User;
@@ -164,5 +166,30 @@ class UserControllerTests {
                 .withBasicAuth("admin", "abc123")
                 .getForEntity("/users/103", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldUpdateAnExistingUser() {
+        User userUpdate = new User(null, "Tomás", null);
+        HttpEntity<User> request = new HttpEntity<>(userUpdate);
+        ResponseEntity<Void> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .exchange("/users/100", HttpMethod.PUT, request, Void.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .getForEntity("/users/100", String.class);
+
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number id = documentContext.read("$.id");
+        String name = documentContext.read("$.name");
+
+        assertThat(id).isEqualTo(100);
+        assertThat(name).isEqualTo("Tomás");
     }
 }

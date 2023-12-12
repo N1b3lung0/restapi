@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,5 +61,13 @@ class UserController {
                 .buildAndExpand(savedUser.id())
                 .toUri();
         return ResponseEntity.created(locationOfNewUser).build();
+    }
+
+    @PutMapping("/{requestedId}")
+    private ResponseEntity<Void> putUser(@PathVariable Long requestedId, @RequestBody User userUpdate, Principal principal) {
+        User user = repository.findByIdAndOwner(requestedId, principal.getName());
+        User updatedUser = new User(user.id(), userUpdate.name(), principal.getName());
+        repository.save(updatedUser);
+        return ResponseEntity.noContent().build();
     }
 }
