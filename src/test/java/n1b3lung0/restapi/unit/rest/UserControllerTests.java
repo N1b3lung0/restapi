@@ -192,4 +192,14 @@ class UserControllerTests {
         assertThat(id).isEqualTo(100);
         assertThat(name).isEqualTo("Tomás");
     }
+
+    @Test
+    void shouldNotUpdateAUserThatDoesNotExist() {
+        User unknownUser = new User(null, "Tomás", null);
+        HttpEntity<User> request = new HttpEntity<>(unknownUser);
+        ResponseEntity<Void> response = restTemplate
+                .withBasicAuth("admin", "abc123")
+                .exchange("/users/99999", HttpMethod.PUT, request, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
 }

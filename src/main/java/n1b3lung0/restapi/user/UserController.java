@@ -66,8 +66,11 @@ class UserController {
     @PutMapping("/{requestedId}")
     private ResponseEntity<Void> putUser(@PathVariable Long requestedId, @RequestBody User userUpdate, Principal principal) {
         User user = repository.findByIdAndOwner(requestedId, principal.getName());
-        User updatedUser = new User(user.id(), userUpdate.name(), principal.getName());
-        repository.save(updatedUser);
-        return ResponseEntity.noContent().build();
+        if (user != null) {
+            User updatedUser = new User(user.id(), userUpdate.name(), principal.getName());
+            repository.save(updatedUser);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
